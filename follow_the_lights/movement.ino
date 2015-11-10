@@ -8,6 +8,11 @@ char dirToChar(int value) {
   else if (value < 0) return 'a';
   return 'o';
 }
+void moveMotors(int left, int right, int milliseconds) {
+  moveMotors(left, right);
+  pause(milliseconds);
+  halt();
+}
 
 void moveMotors(int left, int right) {
   motors('1', dirToChar(left), abs(left));

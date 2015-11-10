@@ -22,16 +22,60 @@ void setup() {
   }
 
   outputHigh(4);
-
-
-  
-
-
+ 
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
+
+  attachInterrupt(0, bumperPressed, LOW);
+  attachInterrupt(1, bumperPressed, LOW);
   
 }
 
+boolean interuptActive = false; 
+
+void bumperPressed() {
+  if (interuptActive) return;
+  interuptActive = true; 
+  halt();
+  pause(50);
+  
+  bool leftB = !readInput(2);
+  bool rightB = !readInput(3);
+  
+  strip.setPixelColor(1, !leftB ? strip.Color(0,0,0) : strip.Color(0,255,0));
+  strip.setPixelColor(3, !rightB ? strip.Color(0,0,0) : strip.Color(0,255,0));
+
+  strip.show();
+  
+  if (leftB && !rightB) {
+    moveMotors(0, -100, 200);
+  } else if (!leftB && rightB) {
+    moveMotors(-100,0, 200);
+  } else if (left && right) {
+    moveMotors(-100,-100, 50);
+    if (random(0,1)) {
+      moveMotors(-100, 100, 250); 
+    } else {
+      moveMotors(100,-100,250);
+    }
+  } else {
+    halt();
+    pause(1000);
+  }
+
+  // bounce protection
+  while (!readInput(2) || !readInput(3))  {
+    moveMotors(30,30,30);
+  }
+
+  leftB = !readInput(2);
+  rightB = !readInput(3);
+  strip.setPixelColor(1, !leftB ? strip.Color(0,0,0) : strip.Color(0,255,0));
+  strip.setPixelColor(3, !rightB ? strip.Color(0,0,0) : strip.Color(0,255,0));
+  strip.show();
+
+  interuptActive = false;
+}
 
 void loop() {
   // put your main code here, to run repeatedly:
