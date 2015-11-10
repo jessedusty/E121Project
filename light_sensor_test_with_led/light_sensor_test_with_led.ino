@@ -1,10 +1,16 @@
 #include <ArduinoInit.h>  // no space between # and the word include
 #include <SendOnlySoftwareSerial.h> 
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+  #include <avr/power.h>
+#endif
 
 
 #define leftSpeed 51
 #define rightSpeed 50
 
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(5, 5, NEO_GRB + NEO_KHZ800);
 
 void setup() {
   // put your setup code here, to run once:
@@ -16,6 +22,14 @@ void setup() {
   }
 
   outputHigh(4);
+
+
+  
+
+
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
+  
 }
 
 
@@ -37,9 +51,14 @@ void loop() {
   
   delay(50);
 
+  
 
-  
-  
+  int leftVal = readADC(1)/200; 
+  int rightVal = readADC(2)/200;
+  strip.setPixelColor(0, strip.Color(255-leftVal, 0 ,leftVal));
+  strip.setPixelColor(4, strip.Color(255-rightVal, 0 ,rightVal));
+
+  strip.show();
   
 
 }
