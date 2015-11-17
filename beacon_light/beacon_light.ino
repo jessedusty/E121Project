@@ -46,7 +46,7 @@ int getScaledReading() {
 boolean interuptActive = false; 
 
 void bumperPressed() {
-  if (interuptActive) return;
+  if (interuptActive || !(readInput(2) || readInput(3))) return;
   interuptActive = true; 
   halt();
   pause(50);
