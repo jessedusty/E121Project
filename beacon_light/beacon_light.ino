@@ -38,16 +38,30 @@ void setup() {
   attachInterrupt(1, bumperPressed, LOW);
 
   startingFloor = floorSensor(); 
+
+  findMax(-35,35, 750); 
 }
 
 int getScaledReading() { 
   return map(readADC(3), 20000, 50000, 0, 2550);
 }
+
+int getUnscaledReading() {
+  return readADC(3); 
+}
+
+
+void searchReverse() {
+  moveMotors(-75,-75,200);
+}
+
 boolean interuptActive = false; 
+int interupted = false;
 
 void bumperPressed() {
   if (interuptActive || !(readInput(2) || readInput(3))) return;
   interuptActive = true; 
+  interupted += 1; 
   halt();
   pause(50);
   
@@ -64,15 +78,14 @@ void bumperPressed() {
   } else if (!leftB && rightB) {
     moveMotors(-100,0, 200);
   } else if (left && right) {
-    moveMotors(-100,-100, 50);
-    if (random(0,1)) {
-      moveMotors(-100, 100, 250); 
-    } else {
-      moveMotors(100,-100,250);
-    }
+    
+    //moveMotors(-100,-100, 50);
+    
+    moveMotors(100,-100,50);
+    
   } else {
     halt();
-    pause(1000);
+    //pause(1000);
   }
 
   // bounce protection
@@ -94,7 +107,38 @@ int floorSensor() {
     return map(readADC(0), 13000, 41000, 0, 100) > 50;
 }
 
-void loop() {
+#define maxSearchPeriod 1500
+
+void findMax(int lowSpeed, int highSpeed) {
+  findMax(lowSpeed, highSpeed, maxSearchPeriod);
+}
+
+void findMax(int lowSpeed, int highSpeed, int searchTime) {
+  unsigned long start =  millis();
+  moveMotors(highSpeed,lowSpeed);
+  int maxMag = getUnscaledReading();
+  unsigned int maxDir = 0;
+  while (millis() < start + maxSearchPeriod) {
+    if (interupted > 3) {
+      searchReverse();
+      interupted = 0;
+      findMax(-25,50, 500);
+      return;
+    }
+    if (maxMag < getUnscaledReading()) {
+        maxDir = millis() - start;
+        maxMag = getUnscaledReading();
+    }
+  }
+  unsigned long endt = millis();
+  halt();
+  moveMotors(lowSpeed,highSpeed); 
+  pause((endt - start) - maxDir); 
+  halt();
+}
+
+
+void oldRunningCode() {
   // put your main code here, to run repeatedly:
   Serial.print("\033[0H\033[0J");
   
@@ -130,6 +174,26 @@ void loop() {
    } else {
     halt();
    }
-  
+}
 
+void old2() {
+  if (floorSensor() == startingFloor) {
+    if (interupted > 3) {
+      interupted = 0;
+      searchReverse();
+      findMax(-50,50,100);
+    }
+    moveMotors(100,100);
+  } else {
+    halt();
+  }
+  if (!readInput(2) && !readInput(3)) bumperPressed();
+}
+
+
+void loop() {
+
+  findMax(-30,30,2000);
+  halt();
+  pause(2000);
 }
