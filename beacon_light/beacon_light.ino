@@ -125,7 +125,7 @@ void findMax(int lowSpeed, int highSpeed, int searchTime) {
       findMax(-25,50, 500);
       return;
     }
-    if (maxMag < getUnscaledReading()) {
+    if (maxMag > getUnscaledReading()) {
         maxDir = millis() - start;
         maxMag = getUnscaledReading();
     }
