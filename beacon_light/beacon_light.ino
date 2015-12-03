@@ -17,6 +17,8 @@ int last;
 
 boolean startingFloor; 
 
+int followDirection = -1; 
+
 void setup() {
   // put your setup code here, to run once:
   configArduino();
@@ -62,6 +64,7 @@ void bumperPressed() {
   if (interuptActive || !(readInput(2) || readInput(3))) return;
   interuptActive = true; 
   interupted += 1; 
+  followDirection *= -1;
   halt();
   pause(50);
   
@@ -113,6 +116,8 @@ void findMax(int lowSpeed, int highSpeed) {
   findMax(lowSpeed, highSpeed, maxSearchPeriod);
 }
 
+
+
 void findMax(int lowSpeed, int highSpeed, int searchTime) {
   unsigned long start =  millis();
   moveMotors(highSpeed,lowSpeed);
@@ -138,7 +143,8 @@ void findMax(int lowSpeed, int highSpeed, int searchTime) {
 }
 
 
-void oldRunningCode() {
+
+void trackBeacon() {
   // put your main code here, to run repeatedly:
   Serial.print("\033[0H\033[0J");
   
@@ -163,20 +169,40 @@ void oldRunningCode() {
   strip.setPixelColor(2, strip.Color(255-top/10, 0 ,top/10));
   strip.show();
 
-   if (startingFloor == floorSensor()) {
-     if (last < top) {
-      moveMotors(100,75);    
-     } else {
-      moveMotors(75,100);
-     }
-  
-    last = top;
-   } else {
+    int lowVal = 25;
+    int highVal = 100;
+
+   if (startingFloor != floorSensor()) {
+    strip.setPixelColor(0, strip.Color(255,255,255));
     halt();
+   } else if (followDirection == -1) {
+    strip.setPixelColor(0, strip.Color(255,0,0));
+     if (last > top) {
+      moveMotors(highVal,lowVal);    
+     } else {
+      moveMotors(lowVal,highVal);
+     }
+     
+   } else if (followDirection == 1) {
+    strip.setPixelColor(0, strip.Color(0,255,0));
+    if (last < top) {
+      moveMotors(highVal,lowVal);    
+     } else {
+      moveMotors(lowVal,highVal);
+     }
+    
+   } else {
+    followDirection = 1;
+    strip.setPixelColor(0, strip.Color(0,0,255));
    }
+   last = top;
+   if (interupted > 2) {
+      interupted = 0;
+      findMax(0,100,100);
+  }
 }
 
-void old2() {
+void beaconFind() {
   if (floorSensor() == startingFloor) {
     if (interupted > 3) {
       interupted = 0;
@@ -191,9 +217,17 @@ void old2() {
 }
 
 
-void loop() {
-
+void pointTowards() {
   findMax(-30,30,2000);
   halt();
   pause(2000);
+}
+void loop() {
+
+  beaconFind();
+
+  while (1) {
+    trackBeacon();
+  }
+
 }
