@@ -23,11 +23,14 @@ void beacon_setup() {
 
   startingFloor = floorSensor(); 
 
-  findMax(-35,35, 750); 
+  findMax(-50,50, 750); 
 }
 
 int getScaledReading() { 
-  return map(readADC(3), 20000, 50000, 0, 2550);
+  int val = map(readADC(3), 20000, 50000, 0, 2550);
+  if (val < 0) val = 0;
+  if (val > 2550) val = 2550; 
+  return val;
 }
 
 int getUnscaledReading() {
@@ -114,7 +117,7 @@ void findMax(int lowSpeed, int highSpeed, int searchTime) {
       findMax(-25,50, 500);
       return;
     }
-    if (maxMag > getUnscaledReading()) {
+    if (maxMag > getScaledReading()) {
         maxDir = millis() - start;
         maxMag = getUnscaledReading();
     }
@@ -155,7 +158,6 @@ void trackBeacon() {
 
     int lowVal = 25;
     int highVal = 100;
-
    if (startingFloor != floorSensor()) {
     strip.setPixelColor(0, strip.Color(255,255,255));
     halt();
