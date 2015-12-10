@@ -27,7 +27,7 @@ void beacon_setup() {
 }
 
 int getScaledReading() { 
-  int val = map(readADC(3), 20000, 50000, 0, 2550);
+  int val = map(readADC(3), 20000, 55000, 0, 2550);
   if (val < 0) val = 0;
   if (val > 2550) val = 2550; 
   return val;
@@ -209,7 +209,9 @@ void beacon_light() {
   beaconFind();
 
   while (floorSensor() == startingFloor) {
-    trackBeacon();
+    //trackBeacon();
+    findMax(25, 100, 200);
+    
   }
 
   moveMotors(100,100,500); 
